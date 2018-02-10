@@ -48,11 +48,6 @@ class TodoListViewController: UITableViewController {
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done //toggles done flag
         
-        //context.delete(itemArray[indexPath.row]) //has to be done first as array will be changed
-        //itemArray.remove(at: indexPath.row) //just removes from array not coredata
-        
-        
-        
         tableView.deselectRow(at: indexPath, animated: true)
         
         let item = itemArray[indexPath.row]
@@ -103,17 +98,17 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    func loadItems() {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
 
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
+       // let request : NSFetchRequest<Item> = Item.fetchRequest()
         do {
             itemArray = try context.fetch(request)
         } catch {
             print("error fetching data from context \(error)")
         }
+        tableView.reloadData()
     }
     
-
 }
 
 //MARK: - Search Bar Methods
@@ -122,20 +117,24 @@ extension TodoListViewController: UISearchBarDelegate{
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         print(searchBar.text!)
-        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-        request.predicate = predicate
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
-        let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
-        request.sortDescriptors = [sortDescriptor]
-        
-        do {
-            itemArray = try context.fetch(request)
-        } catch {
-            print("error fetching data from context \(error)")
+        loadItems(with: request)
+
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            print("search bar cleared")
+            loadItems()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+            
         }
-        
-        tableView.reloadData()
     }
 }
 
