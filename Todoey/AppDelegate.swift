@@ -20,8 +20,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         print("did finish launching with options")
+        print(Realm.Configuration.defaultConfiguration.fileURL)
+        let data = Data()
+        data.name = "Bill"
+        data.age = 57
         
-//        print(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).last! as String)
+        do {
+            let realm = try Realm()
+            try realm.write {
+                realm.add(data)
+                print("realm created")
+                print(realm)
+            }
+        } catch {
+            print("error creating realm: \(error)")
+        }
         
         return true
     }
